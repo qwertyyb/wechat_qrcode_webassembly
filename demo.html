@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>OpenCV JS Tests</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body {
+                font-family: Monospace;
+                background-color: #ffffff;
+                /* margin: 0px; */
+            }
+            a {
+                color: #0040ff;
+            }
+        </style>
+        <script type="text/javascript">
+          var launchDemo = () => {
+            document.querySelector('.demo').style.display = 'flex'
+
+            const wr = new cv.wechat_qrcode_WeChatQRCode(
+              "wechat_qrcode/detect.prototxt",
+              "wechat_qrcode/detect.caffemodel",
+              "wechat_qrcode/sr.prototxt",
+              "wechat_qrcode/sr.caffemodel"
+            )
+            const input = document.querySelector('#file-input')
+            const img = document.querySelector('#file-img')
+            input.style.display = 'block'
+            
+            input.addEventListener('change', (e) => {
+              const [file] = e.target.files
+              if (!file) return;
+              const url = URL.createObjectURL(file)
+              img.src = url
+            })
+
+            img.addEventListener('load', (e) => {
+              const results = wr.detectAndDecode(cv.imread(img))
+              let i = 0
+              let arr = []
+              while(i < results.size()) {
+                arr.push(results.get(i++))
+              }
+              results.delete()
+
+              document.querySelector('.result-count').textContent = `检测到 ${arr.length} 个二维码`
+
+              document.querySelector('.result-list').innerHTML = arr.join('<br />')
+            })
+            img.src = './qrcode.png'
+          }
+
+          // Helper for opencv.js (see below)
+          var Module = {
+            preRun: [],
+            postRun: [] ,
+            onRuntimeInitialized: function() {
+              console.log("Emscripten runtime is ready");
+              if (window.cv instanceof Promise) {
+                window.cv.then((target) => {
+                   window.cv = target;
+                   //console.log(cv.getBuildInformation());
+
+                    launchDemo()
+                })
+              }
+            },
+            print: (function() {
+              var element = document.getElementById('output');
+              if (element) element.value = ''; // clear browser cache
+              return function(text) {
+                console.log(text);
+                if (element) {
+                  element.value += text + "\n";
+                  element.scrollTop = element.scrollHeight; // focus on bottom
+                }
+              };
+            })(),
+            printErr: function(text) {
+              console.error(text);
+            },
+            setStatus: function(text) {
+              console.log(text);
+            },
+            totalDependencies: 0
+          };
+
+          Module.setStatus('Downloading...');
+          window.onerror = function(event) {
+            Module.setStatus('Exception thrown, see JavaScript console');
+            Module.setStatus = function(text) {
+              if (text) Module.printErr('[post-exception status] ' + text);
+            };
+          };
+        </script>
+    </head>
+    <body>
+        <br>
+        <div class="demo" style="display: none;flex-direction: column;align-items: center;">
+
+        <h1>微信二维码引擎WebAssembly版在线demo</h1>
+        <br>
+          <h3 style="min-width: 600px">输入: </h3>
+          <img alt="" id="file-img" style="width: 400px;height: auto">
+          <br>
+          <input id="file-input" style="display: none" type="file" accept="image/*"/>
+          <br>
+          <div class="results" style="min-width: 600px">
+            <h3>结果: </h3>
+            <div class="result-count"></div>
+            <br>
+            <div class="result-list"></div>
+          </div>
+        </div>
+
+
+        <script src="wechat_qrcode_files.js"></script>
+        <script type="application/javascript" async src="opencv.js"></script>
+    </body>
+</html>

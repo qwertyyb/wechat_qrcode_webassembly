@@ -1,0 +1,29 @@
+{
+  "name": "opencv_js_tests",
+  "description": "Tests for opencv js bindings",
+  "version": "1.0.1",
+  "dependencies": {
+    "ansi-colors": "^4.1.1",
+    "minimist": "^1.2.0",
+    "puppeteer": "^10.0.0"
+  },
+  "devDependencies": {
+    "eslint": "latest",
+    "eslint-config-google": "latest",
+    "qunit": "^2.16.0"
+  },
+  "scripts": {
+    "test": "node run_puppeteer.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opencv/opencv.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache 2.0 License",
+  "bugs": {
+    "url": "https://github.com/opencv/opencv/issues"
+  },
+  "homepage": "https://github.com/opencv/opencv"
+}
