@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>OpenCV JS Tests</title>
+        <title>微信二维码引擎WebAssembly版在线demo</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <style>
@@ -18,14 +18,14 @@
           var launchDemo = () => {
             document.querySelector('.demo').style.display = 'flex'
 
-            const wr = new cv.wechat_qrcode_WeChatQRCode(
+            var wr = new cv.wechat_qrcode_WeChatQRCode(
               "wechat_qrcode/detect.prototxt",
               "wechat_qrcode/detect.caffemodel",
               "wechat_qrcode/sr.prototxt",
               "wechat_qrcode/sr.caffemodel"
             )
             const input = document.querySelector('#file-input')
-            const img = document.querySelector('#file-img')
+            const img = document.createElement('img')
             input.style.display = 'block'
             
             input.addEventListener('change', (e) => {
@@ -36,13 +36,32 @@
             })
 
             img.addEventListener('load', (e) => {
-              const results = wr.detectAndDecode(cv.imread(img))
+              const inputImg = cv.imread(img)
+              cv.imshow('preview-canvas', inputImg)
+              const out = new cv.MatVector()
+              const results = wr.detectAndDecode(inputImg, out)
               let i = 0
               let arr = []
               while(i < results.size()) {
                 arr.push(results.get(i++))
               }
               results.delete()
+
+              const rects = []
+              let temp = inputImg
+              for(let j = 0; j < out.size(); j += 1) {
+                let rect = cv.boundingRect(out.get(j))
+                rects.push(rect)
+
+
+                let point1 = new cv.Point(rect.x, rect.y);
+                let point2 = new cv.Point(rect.x + rect.width, rect.y + rect.height);
+
+                let rectangleColor = new cv.Scalar(255, 0, 0);
+                cv.rectangle(temp, point1, point2, rectangleColor, 2, cv.LINE_AA, 0);
+              }
+
+              cv.imshow('preview-canvas', temp)
 
               document.querySelector('.result-count').textContent = `检测到 ${arr.length} 个二维码`
 
@@ -102,7 +121,11 @@
         <h1>微信二维码引擎WebAssembly版在线demo</h1>
         <br>
           <h3 style="min-width: 600px">输入: </h3>
-          <img alt="" id="file-img" style="width: 400px;height: auto">
+          <div class="preview-section">
+            <!-- <img alt="" id="file-img" style="width: 400px;height: auto"> -->
+            <canvas id="preview-canvas" style="max-width: 800px;max-height: 800px"></canvas>
+            <div class="qrcode-list"></div>
+          </div>
           <br>
           <input id="file-input" style="display: none" type="file" accept="image/*"/>
           <br>
